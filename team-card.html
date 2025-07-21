@@ -1,0 +1,50 @@
+<!-- Template para card de estatísticas de time -->
+<template id="team-card-template">
+    <div class="team-stats-card">
+        <div class="team-stats-header">
+            <div class="team-stats-name team-{color}">
+                Time {colorName}
+            </div>
+            <div class="team-stats-record">
+                {wins}V - {draws}E - {losses}D | {points} pts
+            </div>
+            <div class="team-stats-goals">
+                Gols: {goalsFor} / Sofridos: {goalsAgainst} / Saldo: {goalDifference}
+            </div>
+        </div>
+        
+        <div class="player-stats">
+            <h4>Estatísticas dos Jogadores</h4>
+            <div class="player-stats-list">
+                <!-- Jogadores serão inseridos dinamicamente aqui -->
+            </div>
+        </div>
+    </div>
+</template>
+
+<!-- Template para estatística de jogador -->
+<template id="player-stats-template">
+    <div class="player-stats-item">
+        <span class="player-name">{playerName}</span>
+        <span class="player-stats-data">{goals} gols, {assists} assistências</span>
+    </div>
+</template>
+
+<!-- Template para entrada de gol no histórico -->
+<template id="goal-entry-template">
+    <div class="goal-entry">
+        ⚽ {scorer} ({teamColor}) - {time}
+        <span class="goal-assist" style="display: {assistDisplay}"> | Assistência: {assist}</span>
+    </div>
+</template>
+
+<!-- Template para opção de select de time -->
+<template id="team-option-template">
+    <option value="{teamId}" data-color="{color}">Time {colorName}</option>
+</template>
+
+<!-- Template para jogador no modal de gol -->
+<template id="player-option-template">
+    <option value="{playerName}">{playerName}</option>
+</template>
+

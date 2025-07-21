@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Partidas de Futebol</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+        
+        <!-- Tela de Boas-vindas -->
+        <section id="welcome-screen" class="section-container hidden">
+            <div class="section-content">
+                <h2>Gerenciador de <span class="highlight">Partidas</span></h2>
+                <p>Organize suas partidas amistosas, acompanhe placares, estatísticas de jogadores e muito mais com facilidade.</p>
+                <div class="welcome-buttons">
+                    <button id="continue-btn" class="primary-btn">
+                        <i class="fas fa-play"></i> Continuar Contagem
+                    </button>
+                    <button id="new-count-btn" class="secondary-btn">
+                        <i class="fas fa-redo"></i> Começar Nova
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Configuração dos Times -->
+        <section id="team-setup" class="section-container">
+            <h2>Configuração dos Times</h2>
+            <div class="teams-container">
+                <!-- Time 1 -->
+                <div class="team-config" id="team1-card">
+                    <h3>Time 1</h3>
+                    <div class="team-color">
+                        <label for="team1-color">Cor:</label>
+                        <select id="team1-color" class="large-select">
+                            <option value="" selected disabled>Selecione uma cor</option>
+                            <option value="red">Vermelho</option>
+                            <option value="green">Verde</option>
+                            <option value="blue">Azul</option>
+                            <option value="yellow">Amarelo</option>
+                            <option value="orange">Laranja</option>
+                        </select>
+                    </div>
+                    <div class="players-container" id="team1-players">
+                        <h4>Jogadores (máx. 6)</h4>
+                        <div class="player-input">
+                            <input type="text" placeholder="Nome do Jogador 1" class="player-name large-input" maxlength="20">
+                        </div>
+                        <div class="player-input">
+                            <input type="text" placeholder="Nome do Jogador 2" class="player-name large-input" maxlength="20">
+                        </div>
+                    </div>
+                    <button class="add-player-btn" data-team="1">+ Adicionar Jogador</button>
+                </div>
+                
+                <!-- Time 2 -->
+                <div class="team-config" id="team2-card">
+                    <h3>Time 2</h3>
+                    <div class="team-color">
+                        <label for="team2-color">Cor:</label>
+                        <select id="team2-color" class="large-select">
+                            <option value="" selected disabled>Selecione uma cor</option>
+                            <option value="red">Vermelho</option>
+                            <option value="green">Verde</option>
+                            <option value="blue">Azul</option>
+                            <option value="yellow">Amarelo</option>
+                            <option value="orange">Laranja</option>
+                        </select>
+                    </div>
+                    <div class="players-container" id="team2-players">
+                        <h4>Jogadores (máx. 6)</h4>
+                        <div class="player-input">
+                            <input type="text" placeholder="Nome do Jogador 1" class="player-name large-input" maxlength="20">
+                        </div>
+                        <div class="player-input">
+                            <input type="text" placeholder="Nome do Jogador 2" class="player-name large-input" maxlength="20">
+                        </div>
+                    </div>
+                    <button class="add-player-btn" data-team="2">+ Adicionar Jogador</button>
+                </div>
+                
+                <!-- Time 3 -->
+                <div class="team-config" id="team3-card">
+                    <h3>Time 3</h3>
+                    <div class="team-color">
+                        <label for="team3-color">Cor:</label>
+                        <select id="team3-color" class="large-select">
+                            <option value="" selected disabled>Selecione uma cor</option>
+                            <option value="red">Vermelho</option>
+                            <option value="green">Verde</option>
+                            <option value="blue">Azul</option>
+                            <option value="yellow">Amarelo</option>
+                            <option value="orange">Laranja</option>
+                        </select>
+                    </div>
+                    <div class="players-container" id="team3-players">
+                        <h4>Jogadores (máx. 6)</h4>
+                        <div class="player-input">
+                            <input type="text" placeholder="Nome do Jogador 1" class="player-name large-input" maxlength="20">
+                        </div>
+                        <div class="player-input">
+                            <input type="text" placeholder="Nome do Jogador 2" class="player-name large-input" maxlength="20">
+                        </div>
+                    </div>
+                    <button class="add-player-btn" data-team="3">+ Adicionar Jogador</button>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button id="save-teams-btn" class="primary-btn">Salvar Times</button>
+            </div>
+        </section>
+        
+        <!-- Configuração da Partida -->
+        <section id="match-setup" class="section-container hidden">
+            <h2>Configurar Partida</h2>
+            <div id="auto-match-message" class="info-message hidden">
+                <i class="fas fa-info-circle"></i>
+                <span>Próxima partida configurada automaticamente: time vencedor vs. time que não jogou</span>
+            </div>
+            <div class="match-config">
+                <div class="team-select">
+                    <label for="team-a-select">Time A:</label>
+                    <select id="team-a-select" class="large-select"></select>
+                </div>
+                <div class="vs-indicator">VS</div>
+                <div class="team-select">
+                    <label for="team-b-select">Time B:</label>
+                    <select id="team-b-select" class="large-select"></select>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button id="start-match-btn" class="primary-btn">Confirmar Confronto</button>
+                <button id="all-stats-btn" class="all-stats-btn secondary-btn">Ver Estatísticas Gerais</button>
+            </div>
+        </section>
+        
+        <!-- Partida em Andamento -->
+        <section id="match-in-progress" class="section-container hidden">
+            <h2>Partida em Andamento</h2>
+            <div class="match-header">
+                <div class="team-display team-a">
+                    <div class="team-color-display" id="match-team-a-color"></div>
+                </div>
+                <div class="score-display">
+                    <span id="team-a-score">0</span>
+                    <span class="score-separator">:</span>
+                    <span id="team-b-score">0</span>
+                </div>
+                <div class="team-display team-b">
+                    <div class="team-color-display" id="match-team-b-color"></div>
+                </div>
+            </div>
+            
+            <div class="timer-container">
+                <div class="timer-display">
+                    <span id="match-timer">07:00</span>
+                </div>
+                <div class="timer-status">
+                    <span id="match-status">Aguardando início</span>
+                </div>
+                <div class="timer-controls">
+                    <button id="timer-start-btn" class="control-btn"><i class="fas fa-play"></i> Iniciar</button>
+                    <button id="timer-pause-btn" class="control-btn hidden"><i class="fas fa-pause"></i> Pausar</button>
+                    <button id="timer-reset-btn" class="control-btn"><i class="fas fa-redo"></i> Reiniciar</button>
+                </div>
+            </div>
+            
+            <div class="goals-container">
+                <div class="goal-buttons">
+                    <button id="team-a-goal-btn" class="goal-btn team-a white-text">
+                        <i class="fas fa-futbol"></i> Gol
+                    </button>
+                    <button id="team-b-goal-btn" class="goal-btn team-b white-text">
+                        <i class="fas fa-futbol"></i> Gol
+                    </button>
+                </div>
+                <div class="goals-history-container">
+                    <h3>Histórico de Gols</h3>
+                    <div id="goals-history" class="goals-history">
+                        <p class="no-goals">Nenhum gol marcado ainda</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Informações de Vitórias dos Times -->
+            <div class="teams-wins-container">
+                <div id="teams-wins-display" class="teams-wins-display">
+                    <!-- Preenchido dinamicamente -->
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="end-match-btn" class="primary-btn">Encerrar Partida</button>
+                <button id="annul-match-btn" class="danger-btn">Anular Partida</button>
+            </div>
+        </section>
+        
+        <!-- Modal de Gol -->
+        <div id="goal-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2 id="goal-modal-title">Registrar Gol</h2>
+                <div class="goal-form">
+                    <div class="form-group">
+                        <div class="goal-type-toggle">
+                            <span class="toggle-label">A favor</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="goal-type-checkbox">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-label">Contra</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="goal-scorer">Quem marcou o gol?</label>
+                        <select id="goal-scorer" class="large-select"></select>
+                    </div>
+                    <div class="form-group" id="assist-group">
+                        <label for="goal-assist">Quem deu a assistência? (opcional)</label>
+                        <select id="goal-assist" class="large-select"></select>
+                    </div>
+                    <div class="modal-buttons">
+                        <button id="save-goal-btn" class="primary-btn">Salvar Gol</button>
+                        <button id="delete-goal-btn" class="danger-btn hidden">Excluir Gol</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal de Confirmação de Anulação -->
+        <div id="annul-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>Anular Partida</h2>
+                <p>Tem certeza que deseja anular esta partida? Esta ação não poderá ser desfeita e os dados desta partida não serão contabilizados nas estatísticas.</p>
+                <div class="action-buttons">
+                    <button id="confirm-annul-btn" class="danger-btn">Sim, Anular Partida</button>
+                    <button id="cancel-annul-btn" class="secondary-btn">Cancelar</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Estatísticas da Partida -->
+        <section id="match-stats" class="section-container hidden">
+            <h2>Estatísticas da Partida</h2>
+            <div class="match-result">
+                <div class="team-display team-a">
+                    <div class="team-color-display" id="stats-team-a-color"></div>
+                </div>
+                <div class="score-display">
+                    <span id="stats-team-a-score">0</span>
+                    <span class="score-separator">:</span>
+                    <span id="stats-team-b-score">0</span>
+                </div>
+                <div class="team-display team-b">
+                    <div class="team-color-display" id="stats-team-b-color"></div>
+                </div>
+            </div>
+            
+            <div class="goals-history-container">
+                <h3>Gols da Partida</h3>
+                <div id="stats-goals-list" class="goals-history">
+                    <p class="no-goals">Nenhum gol marcado</p>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="new-match-btn" class="primary-btn">Nova Partida</button>
+                <button id="all-stats-btn" class="all-stats-btn secondary-btn">Ver Estatísticas Gerais</button>
+            </div>
+        </section>
+        
+        <!-- Estatísticas Gerais -->
+        <section id="all-stats" class="section-container hidden">
+            <h2>Estatísticas Gerais</h2>
+            <div id="teams-stats-container" class="teams-stats-container">
+                <!-- Preenchido dinamicamente -->
+            </div>
+            
+            <div class="action-buttons">
+                <button id="generate-all-stats-image-btn" class="primary-btn">
+                    <i class="fas fa-download"></i> Baixar Imagem de Estatísticas
+                </button>
+                <button id="copy-table-btn" class="primary-btn">
+                    <i class="fas fa-copy"></i> Copiar Tabela
+                </button>
+                <button id="back-btn" class="secondary-btn">Voltar</button>
+            </div>
+            
+            <!-- Canvas para geração de imagem (invisível) -->
+            <canvas id="stats-canvas" style="display: none;"></canvas>
+        </section>
+        
+
+    
+    <script src="ranking-utils.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
