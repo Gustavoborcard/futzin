@@ -14,8 +14,11 @@ let currentMatch = {
     viewingStats: false, // Flag para controlar visualização de estatísticas
     startTime: null, // Timestamp de início da partida
     pausedTime: 0, // Tempo total pausado em milissegundos
-    lastPauseStart: null // Timestamp do último pause
+    lastPauseStart: null, // Timestamp do último pause
+    endTime: null // Timestamp do fim da partida (quando atinge 3 gols ou é encerrada manualmente)
 };
+
+const GOAL_LIMIT = 2; // Número de gols para acionar a pausa da partida
 
 let allMatches = [];
 let lastWinnerTeam = null;
@@ -102,7 +105,8 @@ function resetAllData() {
             viewingStats: false,
             startTime: null,
             pausedTime: 0,
-            lastPauseStart: null
+            lastPauseStart: null,
+            endTime: null
         };
         lastWinnerTeam = null;
         previousSection = null;
@@ -754,6 +758,7 @@ function startMatch() {
     currentMatch.startTime = null; // Inicializar como null para ser definido no startTimer
     currentMatch.pausedTime = 0;
     currentMatch.lastPauseStart = null;
+    currentMatch.endTime = null; // Resetar o tempo final
 
     // Identificar o time que não está jogando a partida ATUAL
     teamThatDidNotPlayLastMatch = teams.find(
@@ -1228,13 +1233,48 @@ function saveGoal() {
     // Fechar o modal
     closeGoalModal();
 
-    // Verificar se a partida terminou (3 gols do mesmo time)
-    if (currentMatch.scoreA === 3 || currentMatch.scoreB === 3) {
-        endMatch();
+    // Verificar se a partida atingiu o placar de finalização
+    if (currentMatch.scoreA === GOAL_LIMIT || currentMatch.scoreB === GOAL_LIMIT) {
+        handleMatchFinishByScore();
     } else {
-        // Salvar os dados atualizados no localStorage mesmo sem encerrar a partida
+        // Salvar os dados atualizados no localStorage se a partida ainda não terminou
         saveDataToLocalStorage();
     }
+}
+
+/**
+ * Lida com a finalização da partida por placar (GOAL_LIMIT gols),
+ * pausando o jogo e desabilitando controles específicos.
+ */
+function handleMatchFinishByScore() {
+    // 1. Registrar o tempo final da partida ANTES de pausar o cronômetro
+    currentMatch.endTime = Date.now();
+
+    // 2. Pausar o cronômetro se ele estiver rodando
+    if (currentMatch.isTimerRunning) {
+        pauseTimer();
+    }
+
+    // 3. Alterar a mensagem de status
+    const matchStatus = document.getElementById("match-status");
+    if (matchStatus) {
+        matchStatus.textContent = "Partida encerrada";
+    }
+
+    // 4. Desabilitar botões do cronômetro e de registro de novos gols
+    document.getElementById("timer-start-btn").disabled = true;
+    document.getElementById("timer-pause-btn").disabled = true;
+    document.getElementById("timer-reset-btn").disabled = true;
+    document.getElementById("team-a-goal-btn").disabled = true;
+    document.getElementById("team-b-goal-btn").disabled = true;
+
+    // Marcar que a partida está "tecnicamente" encerrada para evitar novos gols
+    // mas sem finalizar os dados ainda.
+    currentMatch.isMatchEnded = true; 
+
+    // Os dados só serão salvos em definitivo ao clicar em "Encerrar Partida"
+    // Portanto, não chamamos saveDataToLocalStorage() aqui.
+    console.log(`Partida atingiu ${GOAL_LIMIT} gols. Controles pausados. Tempo final registrado:`, new Date(currentMatch.endTime));
 }
 
 // Função para excluir um gol
@@ -1343,25 +1383,36 @@ function updateGoalsHistory() {
 
 // Funções de gerenciamento de partida
 function endMatch() {
-    if (currentMatch.isMatchEnded) return;
+    // Reabilitar botões para a próxima partida
+    document.getElementById("timer-start-btn").disabled = false;
+    document.getElementById("timer-pause-btn").disabled = false;
+    document.getElementById("timer-reset-btn").disabled = false;
+    document.getElementById("team-a-goal-btn").disabled = false;
+    document.getElementById("team-b-goal-btn").disabled = false;
 
-    // Pausar o timer
-    pauseTimer();
-
-    // Marcar a partida como encerrada
-    currentMatch.isMatchEnded = true;
+    if (currentMatch.isMatchEnded) {
+        // Se a partida já foi marcada como encerrada (pelo placar de GOAL_LIMIT gols),
+        // o tempo final já foi registrado em handleMatchFinishByScore()
+        // apenas prossiga para salvar os dados e mostrar as estatísticas.
+    } else {
+        // Se o encerramento foi manual (pelo botão, antes dos GOAL_LIMIT gols),
+        // registrar o tempo final agora e executar a lógica padrão de encerramento.
+        currentMatch.endTime = Date.now();
+        pauseTimer();
+        currentMatch.isMatchEnded = true;
+    }
 
     // Atualizar estatísticas dos times e definir flags para próxima partida
     updateTeamStats();
 
-    // Registrar a partida no histórico
+    // Registrar a partida no histórico usando o tempo final registrado
     allMatches.push({
         teamA: currentMatch.teamA,
         teamB: currentMatch.teamB,
         scoreA: currentMatch.scoreA,
         scoreB: currentMatch.scoreB,
         goals: [...currentMatch.goals],
-        date: new Date().toISOString(), // Salvar a data da partida
+        date: new Date(currentMatch.endTime).toISOString(), // Usar o tempo final registrado
         startTime: typeof currentMatch.startTime === 'number' 
             ? new Date(currentMatch.startTime).toISOString() 
             : currentMatch.startTime // Adicionar o timestamp de início da partida
@@ -1587,6 +1638,7 @@ function updateAllStats() {
 
     allMatches.forEach(match => {
         if (match.date && match.startTime) {
+            // Usar match.date como tempo final da partida (que agora reflete o tempo real de encerramento)
             const durationSec = Math.floor((new Date(match.date) - new Date(match.startTime)) / 1000);
             teamPlayTimes[match.teamA.name] += durationSec;
             teamPlayTimes[match.teamB.name] += durationSec;
@@ -1840,6 +1892,7 @@ function generateAllStatsImage() {
 
     allMatches.forEach(match => {
         if (match.date && match.startTime) {
+           // Usar match.date como tempo final da partida (que agora reflete o tempo real de encerramento)
            const durationInSeconds = Math.floor(
              (new Date(match.date) - new Date(match.startTime)) / 1000
         );
@@ -1850,7 +1903,7 @@ function generateAllStatsImage() {
 
     // Configurações de Layout
     const canvasWidth = 1080;
-    const canvasHeight = 1000; // Ajustar conforme necessário
+    const canvasHeight = 1080; // Ajustar conforme necessário
     const padding = 40;
     const headerHeight = 80;
     const teamBlockHeight = 300;
@@ -1876,11 +1929,15 @@ function generateAllStatsImage() {
     ctx.fillStyle = "#333"; // Cor escura para texto
     ctx.font = "bold 36px Montserrat, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("Estatísticas Gerais", canvasWidth / 2, padding + 10);
+    ctx.fillText("Estatísticas Gerais", canvasWidth / 2, padding + 30);
 
     ctx.font = "24px Montserrat, sans-serif";
     ctx.textAlign = "right";
-    ctx.fillText(formattedDate, canvasWidth - padding, padding + 10);
+    ctx.fillText(formattedDate, canvasWidth - padding, padding + 30);
+
+    // Traço horizontal abaixo do título
+    ctx.fillStyle = "#3498db"; // var(--primary-color)
+    ctx.fillRect(padding, padding + 60, canvasWidth - 2 * padding, 2); // Linha azul
 
     // Desenhar Blocos dos Times (3 colunas)
     const teamY = headerHeight + padding;
@@ -1943,7 +2000,7 @@ function generateAllStatsImage() {
         // Título Jogadores
         ctx.font = "bold 18px Montserrat, sans-serif";
         ctx.textAlign = "left";
-        ctx.fillText("Jogadores", teamX + 15, currentY);
+        ctx.fillText("Jogadores", teamX + 15, currentY+5);
         currentY += 25;
 
         // Lista de Jogadores
@@ -1992,7 +2049,7 @@ function generateAllStatsImage() {
     ctx.fillStyle = "#333";
     ctx.font = "bold 24px Montserrat, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("Artilheiros", scorersX + statsColWidth / 2, currentStatsY);
+    ctx.fillText("Artilheiros", scorersX + statsColWidth / 2, currentStatsY + 5);
     currentStatsY += 40;
 
     // Lista de Artilheiros
@@ -2015,7 +2072,7 @@ function generateAllStatsImage() {
     if (rankedScorersForImage.length === 0) {
         ctx.fillStyle = "#888";
         ctx.textAlign = "center";
-        ctx.fillText("Nenhum gol registrado", scorersX + statsColWidth / 2, currentStatsY);
+        ctx.fillText("Nenhum gol registrado", scorersX + statsColWidth / 2, currentStatsY + 5);
     } else {
         rankedScorersForImage.forEach((player) => {
             const rankText = window.RankingUtils.formatRankPosition(player.rank);
@@ -2066,7 +2123,7 @@ function generateAllStatsImage() {
     ctx.fillStyle = "#333";
     ctx.font = "bold 24px Montserrat, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("Passes para Gol", assistsX + statsColWidth / 2, currentStatsY);
+    ctx.fillText("Passes para Gol", assistsX + statsColWidth / 2, currentStatsY + 5);
     currentStatsY += 40;
 
     // Lista de Passes
@@ -2082,7 +2139,7 @@ function generateAllStatsImage() {
     if (rankedAssistsForImage.length === 0) {
         ctx.fillStyle = "#888";
         ctx.textAlign = "center";
-        ctx.fillText("Nenhuma assistência", assistsX + statsColWidth / 2, currentStatsY);
+        ctx.fillText("Nenhuma assistência", assistsX + statsColWidth / 2, currentStatsY + 5);
     } else {
         rankedAssistsForImage.forEach((player) => {
             const rankText = window.RankingUtils.formatRankPosition(player.rank);
@@ -2125,7 +2182,7 @@ function generateAllStatsImage() {
     ctx.fillStyle = "#aaa";
     ctx.font = "14px Montserrat, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("Gerado por Manus Soccer App", canvasWidth / 2, footerY);
+    ctx.fillText("Gerado por Futzin App", canvasWidth / 2, footerY);
 
     // Converter para imagem e fazer download
     try {
