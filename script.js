@@ -952,10 +952,9 @@ function updateTimerFromTimestamp() {
 
 // Função para editar um gol existente
 function editGoal(goalIndex) {
-    if (currentMatch.isMatchEnded) {
-        alert("A partida já foi encerrada!");
-        return;
-    }
+    // Permitir edição de gols mesmo após atingir GOAL_LIMIT, 
+    // desde que a partida não tenha sido finalizada pelo botão "Encerrar Partida"
+    // (A verificação será feita apenas na função openGoalModal para novos gols)
 
     const goal = currentMatch.goals[goalIndex];
     if (!goal) {
@@ -1371,8 +1370,12 @@ function updateGoalsHistory() {
             goalText += ` (Assistência: ${goal.assist})`;
         }
 
-        // Adicionar botão de editar apenas se a partida não estiver encerrada
-        if (!currentMatch.isMatchEnded) {
+        // Adicionar botão de editar apenas se a partida não foi finalizada pelo botão "Encerrar Partida"
+        // Permitir edição mesmo após atingir GOAL_LIMIT, mas não após encerramento definitivo
+        // Como não temos uma flag específica para "finalizada definitivamente", 
+        // vamos permitir edição sempre que estivermos na tela de partida em andamento
+        const isInMatchProgress = !document.getElementById("match-in-progress").classList.contains("hidden");
+        if (isInMatchProgress) {
             goalText += ` <button class="edit-goal-btn" onclick="editGoal(${index})" title="Editar gol"><i class="fas fa-edit"></i></button>`;
         }
 
