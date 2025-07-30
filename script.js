@@ -2067,7 +2067,7 @@ function generateAllStatsImage() {
     const topScorers = [...allPlayers]
         .sort((a, b) => b.goals - a.goals)
         .filter((player) => player.goals > 0)
-        .slice(0, 7); // Limitar a 7 para caber
+        .slice(0, 10); // Limitar a 10 para caber
 
     // Aplicar ranking ordinal denso aos artilheiros na imagem
     const rankedScorersForImage = window.RankingUtils.calculateDenseRanking(topScorers, 'goals');
