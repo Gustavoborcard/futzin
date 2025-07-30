@@ -2017,7 +2017,7 @@ function generateAllStatsImage() {
             ctx.fillStyle = "#888";
             ctx.fillText("Nenhuma estatística", teamX + teamColWidth / 2, currentY);
         } else {
-            sortedPlayers.slice(0, 5).forEach((player) => { // Limitar a 5 para caber
+            sortedPlayers.slice(0, 6).forEach((player) => { // Limitar a 6 para caber
                 const playerText = `${player.name} (G: ${player.goals} | A: ${player.assists})`;
                 ctx.textAlign = "left";
                 ctx.fillStyle = "#333";
